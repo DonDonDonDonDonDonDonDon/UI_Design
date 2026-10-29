@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}我的號碼牌 · 郵政生活網{% endblock %}
+{% block content %}
+<section class="page-wrap">
+  <a class="back-link" href="{% url 'core:remittance' %}">← 回取號</a>
+  <div class="page-heading">
+    <span class="eyebrow">MY DIGITAL QUEUE TICKETS</span>
+    <h1>我的號碼牌</h1>
+    <p>此處只會顯示目前登入帳號抽取的號碼牌。</p>
+  </div>
+
+  {% if my_tickets %}
+    <div class="panel mb-6">
+      <h2 class="font-bold">已抽取的號碼牌</h2>
+      <div class="mt-4 flex flex-wrap gap-2">
+        {% for item in my_tickets %}
+          <a class="chip {% if selected_ticket.pk == item.pk %}chip-active{% endif %}" href="{% url 'core:ticket' %}?ticket={{ item.pk }}">{{ item.office_name }} · {{ item.get_business_type_display }} · {{ item.ticket_number }}</a>
+        {% endfor %}
+      </div>
+    </div>
+    {% if selected_ticket %}
+      <div class="ticket-card">
+        <span class="eyebrow">{{ selected_ticket.get_business_type_display }} · {{ selected_ticket.office_name }}</span>
+        <div class="ticket-no">{{ selected_ticket.ticket_number }}</div>
+        <div class="ticket-divider"></div>
+        <div class="flex justify-between text-sm"><span class="text-slate-500">取號時前方等候</span><b>約 {{ selected_ticket.people_ahead }} 人</b></div>
+        <div class="mt-3 flex justify-between text-sm"><span class="text-slate-500">預估等待時間</span><b>約 {{ selected_ticket.estimated_wait_minutes }} 分鐘</b></div>
+        <p class="mt-4 text-center text-xs text-slate-400">取號時間：{{ selected_ticket.issued_at|date:"Y-m-d H:i" }}</p>
+        <div class="qr-box"><div class="qr-pattern">▦</div><b>掃描報到</b><small>請於現場掃描 QR Code 報到</small></div>
+        <p class="mt-4 text-center text-xs text-slate-400">號碼牌與 QR 為展示用示意，尚未連接郵局叫號系統。</p>
+      </div>
+    {% endif %}
+  {% else %}
+    <div class="panel text-center text-slate-500">你目前還沒有抽取號碼牌，請回取號選擇郵局與業務。</div>
+  {% endif %}
+</section>
+{% endblock %}

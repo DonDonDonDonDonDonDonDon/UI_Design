@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}取號 · 郵政生活網{% endblock %}
+{% block content %}
+<section class="page-wrap">
+  <div class="page-heading"><span class="eyebrow">QUEUE TICKETS</span><h1>取號</h1><p>掌握現場等候情況，先填資料再從容辦理。</p></div>
+  {% if user.is_authenticated %}<a class="button button-light mb-5" href="{% url 'core:ticket' %}">查詢我的號碼牌 →</a>{% endif %}
+
+  <div class="panel mb-6">
+    <p class="field-label">選擇縣市查看可取號郵局</p>
+    <form method="get">
+      <div class="chip-row">
+        <button type="submit" name="city" value="" class="chip {% if not city %}chip-active{% endif %}">全部縣市</button>
+        {% for item in cities %}<button type="submit" name="city" value="{{ item }}" class="chip {% if city == item %}chip-active{% endif %}">{{ item }}</button>{% endfor %}
+      </div>
+    </form>
+    {% if city %}
+    <form method="get" class="mt-5">
+      <input type="hidden" name="city" value="{{ city }}">
+      <p class="field-label">{{ city }}行政區</p>
+      <div class="chip-row">
+        <button type="submit" name="district" value="" class="chip {% if not district %}chip-active{% endif %}">全部行政區</button>
+        {% for item in districts %}<button type="submit" name="district" value="{{ item }}" class="chip {% if district == item %}chip-active{% endif %}">{{ item }}</button>{% endfor %}
+      </div>
+    </form>
+    {% endif %}
+  </div>
+
+  <div class="mb-3 flex justify-between text-sm text-slate-500"><span>找到 {{ offices|length }} 間郵局{% if city %} · {{ city }}{% if district %}{{ district }}{% endif %}{% endif %}</span><a href="{% url 'core:remittance' %}" class="text-emerald-800">清除篩選 ×</a></div>
+  <div class="grid gap-4 md:grid-cols-3">
+    {% for office in offices %}<article class="wait-card"><span class="eyebrow">{{ office.name }}</span><p class="mt-3 text-sm text-slate-500">目前等候人數</p><strong>{{ office.waiting|stringformat:"02d" }} <small>人</small></strong><p class="text-xs text-slate-500">預估等候約 {{ office.minutes }} 分鐘</p><div class="wait-meter"><i style="width:{% if office.waiting > 10 %}66{% elif office.waiting > 5 %}38{% elif office.waiting > 0 %}18{% else %}0{% endif %}%"></i></div><p class="mt-3 text-xs text-slate-400">{{ office.area }}</p><div class="mt-5 grid gap-2">{% if user.is_authenticated %}<a class="button button-green w-full justify-center" href="{% url 'core:remittance_form' %}?office={{ office.place_id }}&service=general">一般業務取號 <span>→</span></a><a class="button button-light w-full justify-center" href="{% url 'core:remittance_form' %}?office={{ office.place_id }}&service=postal">郵務業務取號 <span>→</span></a>{% else %}<a class="button button-light w-full justify-center" href="{% url 'accounts:login' %}?next={% url 'core:remittance' %}">登入後取號 <span>→</span></a>{% endif %}</div></article>
+    {% empty %}<div class="panel text-center text-slate-500 md:col-span-3">沒有符合的郵局，試試其他條件。</div>{% endfor %}
+  </div>
+
+  <p class="mt-4 text-xs text-slate-400">等候人數由資料庫提供；預估等待時間依每位等候者 2 分鐘計算。</p>
+</section>
+{% endblock %}

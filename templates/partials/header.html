@@ -1,0 +1,25 @@
+<header class="site-header text-white">
+  <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-4">
+    <a href="{% if user.is_authenticated and user.account == 'Manager' %}{% url 'management:dashboard' %}{% else %}{% url 'core:home' %}{% endif %}" class="flex items-center gap-3">
+      <span class="brand-mark">郵</span>
+      <span class="leading-tight">
+        <span class="block text-lg font-bold">郵政生活網</span>
+        <span class="block text-xs text-emerald-100">TAIWAN POST · EVERYDAY</span>
+      </span>
+    </a>
+
+    <div class="flex items-center gap-2 text-sm">
+      {% if user.is_authenticated %}
+        {% if user.account == "Manager" %}<a href="{% url 'management:dashboard' %}" class="rounded-lg px-3 py-1.5 transition hover:bg-white/10">後台管理</a>{% endif %}
+        <span class="hidden sm:inline">你好，{{ user.account }}</span>
+        <form method="post" action="{% url 'accounts:logout' %}">
+          {% csrf_token %}
+          <button type="submit" class="rounded-lg bg-white/10 px-3 py-1.5 transition hover:bg-white/20">登出</button>
+        </form>
+      {% else %}
+        <a href="{% url 'login-shortcut' %}" class="rounded-lg px-3 py-1.5 transition hover:bg-white/10">登入</a>
+        <a href="{% url 'register-shortcut' %}" class="rounded-lg bg-white px-3 py-1.5 font-semibold text-emerald-800 transition hover:bg-emerald-50">註冊</a>
+      {% endif %}
+    </div>
+  </div>
+</header>

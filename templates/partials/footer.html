@@ -1,0 +1,27 @@
+<footer class="mt-16 bg-slate-800 text-slate-300">
+  <div class="mx-auto grid max-w-6xl gap-8 px-4 py-10 text-sm sm:grid-cols-3">
+    <div>
+      <p class="mb-2 text-base font-semibold text-white">郵政生活網</p>
+      <p class="text-slate-400">郵件、據點與取號，讓日常寄件更簡單。</p>
+    </div>
+    <div>
+      <p class="mb-2 font-semibold text-white">快速連結</p>
+      <ul class="space-y-1">
+        <li><a href="{% url 'core:home' %}" class="hover:text-white">首頁</a></li>
+        <li><a href="{% url 'core:postage' %}" class="hover:text-white">郵資試算</a></li>
+        <li><a href="{% url 'core:locations' %}" class="hover:text-white">據點查詢</a></li>
+        {% if user.is_authenticated %}<li><a href="{% url 'core:remittance' %}" class="hover:text-white">取號</a></li>{% endif %}
+        <li><a href="{% url 'accounts:login' %}" class="hover:text-white">會員登入</a></li>
+        <li><a href="{% url 'accounts:register' %}" class="hover:text-white">加入會員</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="mb-2 font-semibold text-white">服務時間</p>
+      <p class="text-slate-400">星期一至星期五 08:00–17:00</p>
+      <p class="text-slate-400">客服電話：(02) 0000-0000</p>
+    </div>
+  </div>
+  <div class="border-t border-white/10 py-4 text-center text-xs text-slate-500">
+    © {% now "Y" %} 郵局網站 · 本專案為開發骨架
+  </div>
+</footer>

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}一般業務取號 · 郵政生活網{% endblock %}
+{% block content %}
+<section class="page-wrap">
+  <a class="back-link" href="{% url 'core:remittance' %}">← 回取號</a>
+  <div class="page-heading">
+    <span class="eyebrow">{% if service == "postal" %}POSTAL COUNTER SERVICE{% else %}GENERAL COUNTER SERVICE{% endif %}</span>
+    <h1>{% if service == "postal" %}郵務業務取號{% else %}一般業務取號{% endif %}</h1>
+    <p>選擇要辦理的業務，取得現場號碼牌。</p>
+  </div>
+
+  <form method="post" class="panel max-w-2xl">
+    {% csrf_token %}
+    <input type="hidden" name="office" value="{{ office_id }}">
+    <input type="hidden" name="service" value="{{ service }}">
+    <p class="mb-5 rounded-xl bg-[#f3f5ef] px-4 py-3 text-sm">辦理郵局：<b>{{ office.name }}</b></p>
+    <fieldset>
+      <legend class="field-label mb-3">{% if service == "postal" %}郵務業務{% else %}請選擇業務類別{% endif %}</legend>
+      <div class="grid gap-3 sm:grid-cols-2">
+        {% for value, label in business_types %}
+        <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 transition hover:border-emerald-600 hover:bg-emerald-50">
+          <input class="accent-emerald-700" type="radio" name="business_type" value="{{ value }}" required {% if forloop.first %}checked{% endif %}>
+          <span class="font-semibold text-slate-800">{{ label }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </fieldset>
+    <div class="mt-6">
+      <button class="button button-green">確認業務並取號 <span>→</span></button>
+    </div>
+  </form>
+</section>
+{% endblock %}

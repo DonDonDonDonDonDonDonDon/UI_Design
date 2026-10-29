@@ -1,0 +1,90 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700;800&display=swap');
+
+/* 全域樣式 */
+body { font-family: 'DM Sans', 'Noto Sans TC', sans-serif; }
+.site-header { background:#174d3b; box-shadow:0 3px 14px #173f3218; }
+.brand-mark { display:grid; width:42px; height:42px; place-items:center; border-radius:50%; background:#f6f5ee; color:#174d3b; font-weight:800; }
+.hero { position:relative; overflow:hidden; color:white; background:radial-gradient(ellipse at 84% 20%,#689574 0,transparent 33%),linear-gradient(115deg,#174d3b,#286b50); }
+.hero:after { position:absolute; right:-70px; bottom:-230px; width:580px; height:580px; border:1px solid #ffffff20; border-radius:50%; content:""; box-shadow:0 0 0 50px #ffffff08,0 0 0 100px #ffffff06; }
+.hero-stamp { position:absolute; right:10%; top:22%; display:grid; width:160px; height:160px; place-content:center; border:1px solid #ffffff40; border-radius:50%; color:#ffffff36; font-size:44px; font-weight:800; line-height:1.2; text-align:center; transform:rotate(12deg); }
+.eyebrow { color:#82958a; font-size:10px; font-weight:700; letter-spacing:.18em; }
+.tracking-card { position:relative; z-index:1; max-width:790px; margin:-34px auto 0; padding:26px; border:1px solid #e9eee8; border-radius:18px; background:#fff; box-shadow:0 14px 40px #183e2c12; }
+.button { display:inline-flex; align-items:center; justify-content:center; gap:14px; border:0; border-radius:9px; padding:12px 18px; font-size:14px; font-weight:700; text-decoration:none; transition:transform .16s,background .16s; cursor:pointer; }
+.button:hover { transform:translateY(-1px); }
+.button-green { background:#1b6046; color:white; }.button-green:hover { background:#124a35; }
+.button-light { background:#f6f5ee; color:#174d3b; }.button-outline { border:1px solid #ffffff70; color:white; }
+.service-card { position:relative; display:flex; min-height:240px; flex-direction:column; align-items:flex-start; border:1px solid #e8ece6; border-radius:18px; background:white; padding:32px; text-decoration:none; color:#24342b; transition:transform .2s,box-shadow .2s,border-color .2s; }
+.service-card:hover { transform:translateY(-3px); border-color:#a9c4b1; box-shadow:0 14px 30px #183e2c0c; }
+.service-card b { margin-top:22px; font-size:20px; }.service-card small { margin-top:8px; color:#78847c; font-size:14px; }.service-icon { display:grid; width:56px; height:56px; flex:none; place-items:center; border-radius:16px; background:#edf3ec; color:#286348; font-size:28px; }
+.card-arrow { position:absolute; right:26px; top:27px; color:#96a49b; }
+.page-wrap { max-width:1100px; margin:auto; padding:38px 20px 20px; }.back-link { display:inline-block; margin-bottom:22px; color:#66776b; font-size:13px; text-decoration:none; }.page-heading { margin:0 0 26px; }.page-heading h1 { margin-top:7px; font-size:clamp(28px,4vw,38px); font-weight:700; letter-spacing:-.04em; }.page-heading p { margin-top:7px; color:#718078; font-size:14px; }
+.panel,.rate-card,.wait-card { border:1px solid #e7ece6; border-radius:15px; background:white; padding:22px; }.rate-card { padding:24px; }.field-label { display:block; color:#4a5b50; font-size:13px; font-weight:600; }.field-label input,.field-label select { display:block; margin-top:8px; }
+.chip-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }.chip { border:1px solid #e1e7df; border-radius:999px; background:white; padding:8px 15px; color:#647168; font-size:12px; cursor:pointer; }.chip:hover,.chip-active { border-color:#286348; background:#eaf2e9; color:#1d593e; }
+.place-row { display:flex; align-items:center; gap:16px; border:1px solid #e8ece6; border-radius:14px; background:white; padding:18px; }.badge,.mini-tag { border-radius:99px; background:#eef3ed; padding:4px 9px; color:#557160; font-size:10px; }.mini-tag { display:inline-block; background:#f4f5f2; color:#748078; }
+.map-layout { display:grid; min-height:500px; grid-template-columns:1fr 1.35fr; overflow:hidden; border:1px solid #e5eae3; border-radius:17px; background:white; }.map-list { padding:12px 20px; }.map-item { display:flex; gap:12px; border-bottom:1px solid #edf0ec; padding:17px 0; }.map-pin { color:#367557; font-size:22px; }.map-item p,.map-item small { margin-top:3px; color:#758178; font-size:11px; }.map-placeholder { position:relative; overflow:hidden; background:#eaf0e6; }.map-grid { position:absolute; inset:-30%; background-image:linear-gradient(35deg,transparent 47%,#ffffffa8 48%,#ffffffa8 49%,transparent 50%),linear-gradient(130deg,transparent 47%,#ffffffa8 48%,#ffffffa8 49%,transparent 50%),linear-gradient(#cfdcc9 1px,transparent 1px),linear-gradient(90deg,#cfdcc9 1px,transparent 1px); background-size:120px 100px,140px 120px,38px 38px,38px 38px; transform:rotate(-12deg); }.pin { position:absolute; display:grid; width:36px; height:36px; place-items:center; border:3px solid white; border-radius:50% 50% 50% 0; background:#246444; color:white; box-shadow:0 4px 10px #173f3240; transform:rotate(-45deg); }.pin:first-letter { transform:rotate(45deg); }.p1 { left:38%; top:26%; }.p2 { left:65%; top:55%; background:#bf6844; }.p3 { left:26%; top:68%; }.map-label { position:absolute; right:14px; bottom:14px; border-radius:9px; background:white; padding:10px 14px; font-size:12px; font-weight:600; }.map-label small { color:#89958c; font-weight:400; }
+.locker-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:18px; }.locker { display:grid; aspect-ratio:1.4; place-items:center; border:1px solid #d4e4d4; border-radius:7px; background:#edf5ec; color:#54745c; font-size:11px; }.locker-full { border-color:#e6e9e5; background:#f0f1ef; color:#a2aaa3; }
+.wait-card strong { display:block; margin:7px 0; color:#184d37; font-size:38px; }.wait-card strong small { font-size:14px; }.wait-meter { height:5px; margin-top:15px; border-radius:4px; background:#edf1ec; }.wait-meter i { display:block; height:100%; border-radius:4px; background:#78a77f; }
+.parcel-card { border:1px solid #e7ece6; border-radius:14px; background:#fff; padding:18px 20px; }.parcel-section-divider { height:3px; margin:14px 0; background:#9aaa9b; border-radius:3px; }.parcel-status { display:inline-flex; border-radius:99px; background:#edf3ec; padding:5px 10px; color:#35664b; font-size:11px; font-weight:600; }.status-delivered { background:#e8f5eb; color:#287346; }.status-exception { background:#fff0e8; color:#a34f2e; }.empty-parcels { border:1px dashed #dce4dc; border-radius:13px; background:#fafbf9; padding:25px 18px; color:#8a958c; text-align:center; font-size:13px; }
+.parcel-route { display:flex; align-items:stretch; gap:5px; overflow-x:auto; padding:2px 2px 8px; }.route-box { display:flex; min-height:58px; flex:1 0 125px; flex-direction:column; align-items:center; justify-content:center; gap:3px; border:1px solid #dfe6df; border-radius:8px; background:#f5f7f4; padding:6px 5px; color:#768278; font-size:11px; font-weight:600; line-height:1.25; text-align:center; overflow-wrap:anywhere; }.route-box small { font-size:9px; font-weight:500; opacity:.8; }.route-box-passed { border-color:#9eb8a2; background:#e9f1e8; color:#42684a; }.route-box-current { border:2px solid #155e3e; background:#1b6046; color:white; box-shadow:0 3px 10px #174d3b35; }.route-connector { display:grid; flex:0 0 22px; place-items:center; color:#a5b2a7; font-size:22px; font-weight:700; line-height:1; }.route-connector-passed { color:#438153; }
+.ticket-card { max-width:400px; margin:auto; border:1px solid #e4eae3; border-radius:18px; background:white; padding:26px; box-shadow:0 14px 40px #183e2c0c; }.ticket-no { margin:14px 0; color:#174d3b; font-size:64px; font-weight:700; letter-spacing:.06em; }.ticket-divider { border-top:1px dashed #dce3dc; margin:16px 0; }.qr-box { display:flex; flex-direction:column; align-items:center; margin-top:24px; border-radius:12px; background:#f5f7f4; padding:18px; }.qr-pattern { display:grid; width:100px; height:100px; place-items:center; margin-bottom:9px; border:7px solid white; background:repeating-conic-gradient(#1e3829 0 25%,white 0 50%) 0/14px 14px; color:transparent; font-size:60px; }.qr-box b { font-size:13px; }.qr-box small { margin-top:4px; color:#8a958c; font-size:10px; }
+@media(max-width:700px) { .hero-stamp { right:-15px; top:18%; width:120px; height:120px; font-size:32px; }.hero:after { right:-230px; }.tracking-card { padding:20px; }.map-layout { grid-template-columns:1fr; }.map-placeholder { min-height:300px; }.place-row { align-items:flex-start; flex-wrap:wrap; }.place-row>a { margin-left:auto; }.parcel-card { padding:16px 13px; }.route-box { min-height:56px; flex-basis:108px; padding:5px 4px; font-size:9px; }.route-box small { font-size:8px; }.route-connector { flex-basis:16px; font-size:17px; } }
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="url"],
+input[type="tel"],
+input[type="search"],
+textarea,
+select {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  background-color: #fff;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.95rem;
+  color: #1e293b;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #059669;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  width: 1rem;
+  height: 1rem;
+  accent-color: #047857;
+}
+
+/* Django 表單提示與錯誤清單 */
+.helptext ul,
+ul.helptext,
+.errorlist {
+  margin: 0.25rem 0 0;
+  padding-left: 1.1rem;
+  list-style: disc;
+}
+
+.errorlist {
+  color: #dc2626;
+  font-size: 0.8rem;
+}
+
+/* Django admin 以外，確保長文換行正常 */
+.prose-like p {
+  margin-bottom: 0.75rem;
+}
+
+.postage-form fieldset { min-width:0; margin:0; border:0; padding:0; }
+.postage-result,.postage-tip { position:sticky; top:24px; border:1px solid #d8e9d8; border-radius:16px; background:#f4f8f1; padding:24px; }
+.postage-result-icon { display:grid; width:38px; height:38px; place-items:center; margin-bottom:18px; border-radius:50%; background:#dcebdc; color:#286348; font-size:20px; font-weight:700; }
+.postage-price { margin-top:12px; color:#174d3b; font-size:44px; font-weight:800; letter-spacing:-.04em; line-height:1.1; }
+.postage-price small { font-size:17px; font-weight:600; letter-spacing:0; }
+@media(max-width:1023px) { .postage-result,.postage-tip { position:static; } }

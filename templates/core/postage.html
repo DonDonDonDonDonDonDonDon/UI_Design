@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}郵資試算 · 郵政生活網{% endblock %}
+
+{% block content %}
+<section class="page-wrap">
+  <a class="back-link" href="{% url 'core:home' %}">← 回首頁</a>
+  <div class="page-heading">
+    <span class="eyebrow">POSTAGE CALCULATOR</span>
+    <h1>郵資試算</h1>
+    <p>選擇包裹方式與尺寸，快速估算國內或國際郵資。</p>
+  </div>
+
+  <div class="grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(260px,.65fr)]">
+    <form method="get" class="panel postage-form" id="postage-form">
+      <input type="hidden" name="calculate" value="1">
+
+      <div class="mb-5">
+        <span class="eyebrow">STEP 01</span>
+        <h2 class="mt-1 text-lg font-bold">選擇寄件方式</h2>
+      </div>
+      <label class="field-label" for="kind">包裝類型</label>
+      <select id="kind" name="kind" class="mt-2" data-kind-select>
+        <option value="parcel" {% if kind == "parcel" %}selected{% endif %}>自備包裝・普通包裹</option>
+        <option value="box" {% if kind == "box" %}selected{% endif %}>郵政便利箱／便利袋</option>
+        <option value="international" {% if kind == "international" %}selected{% endif %}>國際航空包裹</option>
+      </select>
+
+      <div class="mt-6 grid gap-5 sm:grid-cols-2">
+        <label class="field-label sm:col-span-2">
+          包裹重量（公克）
+          <input type="number" name="weight" min="1" max="{{ weight_max }}" step="1" value="{{ weight }}" placeholder="例如 1,200" required data-weight-input>
+          <small class="mt-1 block font-normal text-slate-500" data-weight-help>{% if kind == "international" %}此目的地限重 {{ weight_limit_kg }} 公斤以內。{% else %}國內普通包裹限重 20 公斤。{% endif %}</small>
+        </label>
+
+        <fieldset class="sm:col-span-2" data-parcel-fields {% if kind != "parcel" %}hidden{% endif %}>
+          <div class="grid gap-5 sm:grid-cols-2">
+            <label class="field-label">寄送區域
+              <select name="region" class="mt-2">
+                {% for value, label in regions %}<option value="{{ value }}" {% if region == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+              </select>
+            </label>
+            <label class="field-label">投遞方式
+              <select name="delivery" class="mt-2" data-delivery-select>
+                {% for value, label in delivery_options %}<option value="{{ value }}" {% if delivery == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+              </select>
+            </label>
+            <div class="grid gap-3 sm:col-span-2 sm:grid-cols-3" data-dimensions {% if delivery != "locker" %}hidden{% endif %}>
+              <label class="field-label">長（公分）<input type="number" name="length" min="1" value="{{ length }}" placeholder="長"></label>
+              <label class="field-label">寬（公分）<input type="number" name="width" min="1" value="{{ width }}" placeholder="寬"></label>
+              <label class="field-label">高（公分）<input type="number" name="height" min="1" value="{{ height }}" placeholder="高"></label>
+              <p class="text-xs font-normal text-slate-500 sm:col-span-3">i 郵箱尺寸上限：最長邊 45 公分、次長邊 34 公分、第三邊 27 公分，三邊合計 105 公分。</p>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="sm:col-span-2" data-box-fields {% if kind != "box" %}hidden{% endif %}>
+          <label class="field-label">便利箱／袋款式
+            <select name="box_size" class="mt-2">
+              {% for value, name, dimensions, price, discount in box_options %}
+                <option value="{{ value }}" {% if box_size == value %}selected{% endif %}>{{ name }}・{{ dimensions }}・NT$ {{ price }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label class="mt-4 flex items-start gap-2 text-sm text-slate-600">
+            <input type="checkbox" name="reused" value="yes" {% if reused %}checked{% endif %}>
+            <span>重複使用原便利箱（袋）{% if box_size == "bag1" or box_size == "bag2" %}（此款無折抵）{% else %}，套用郵資折抵{% endif %}</span>
+          </label>
+          <p class="mt-3 text-xs text-slate-500">便利箱（袋）國內採單一價格；請勿改變原包材形狀。</p>
+        </fieldset>
+
+        <fieldset class="sm:col-span-2" data-international-fields {% if kind != "international" %}hidden{% endif %}>
+          <label class="field-label">寄達國家／地區
+            <select name="international_country" class="mt-2" data-country-select>
+              {% for value, label, max_weight in international_countries %}<option value="{{ value }}" data-max-weight="{{ max_weight }}" {% if international_country == value %}selected{% endif %}>{{ label }}（限重 {{ max_weight }} 公斤）</option>{% endfor %}
+            </select>
+          </label>
+          <div class="mt-4 grid gap-3 sm:grid-cols-3">
+            <label class="field-label">長（公分）<input type="number" name="length" min="1" value="{{ length }}" placeholder="長"></label>
+            <label class="field-label">寬（公分）<input type="number" name="width" min="1" value="{{ width }}" placeholder="寬"></label>
+            <label class="field-label">高（公分）<input type="number" name="height" min="1" value="{{ height }}" placeholder="高"></label>
+          </div>
+          <p class="mt-3 text-xs leading-5 text-slate-500">國際包裹以實際重量與材積重量較重者計費；材積重量＝長 × 寬 × 高 ÷ 6,000。每 0.5 公斤進位計價。請另確認目的地尺寸及禁寄物規定。</p>
+        </fieldset>
+      </div>
+
+      {% if error %}<div class="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">{{ error }}</div>{% endif %}
+      <div class="mt-6 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-5">
+        <button class="button button-green" type="submit">計算郵資 <span>→</span></button>
+        <a class="button button-light" href="{% url 'core:postage' %}">清除</a>
+      </div>
+    </form>
+
+    <aside class="postage-help">
+      {% if result %}
+        <div class="postage-result" aria-live="polite">
+          <span class="postage-result-icon">✓</span>
+          <span class="eyebrow">ESTIMATED POSTAGE</span>
+          <h2 class="mt-2 text-lg font-bold">{{ result.name }}</h2>
+          <p class="postage-price"><small>NT$</small> {{ result.price }}</p>
+          {% if result.base_price %}<p class="text-xs text-slate-500">原價 NT$ {{ result.base_price }}{% if result.discount %}・重複使用折抵 NT$ {{ result.discount }}{% endif %}</p>{% endif %}
+          <div class="mt-5 space-y-2 border-t border-emerald-100 pt-4 text-sm text-slate-600">
+            {% if result.weight_label %}<p class="flex justify-between"><span>重量</span><b>{{ result.weight_label }}</b></p>{% endif %}
+            {% if result.destination_label %}<p class="flex justify-between"><span>寄達地</span><b>{{ result.destination_label }}</b></p>{% endif %}
+            {% if result.billing_label %}<p class="flex justify-between"><span>計費重量</span><b>{{ result.billing_label }}</b></p>{% endif %}
+            {% if result.tier_label %}<p class="flex justify-between"><span>計價級距</span><b>{{ result.tier_label }}</b></p>{% endif %}
+            {% if result.delivery_label %}<p class="flex justify-between"><span>投遞方式</span><b>{{ result.delivery_label }}</b></p>{% endif %}
+            {% if result.region_label %}<p class="flex justify-between"><span>寄送區域</span><b class="text-right">{{ result.region_label }}</b></p>{% endif %}
+            {% if result.dimensions %}<p class="flex justify-between"><span>包材尺寸</span><b>{{ result.dimensions }}</b></p>{% endif %}
+          </div>
+          <p class="mt-4 text-xs leading-5 text-slate-500">{{ result.note }}其他附加服務費用未包含，實際收費以郵局窗口秤重、丈量與公告為準。</p>
+          {% if result.destination_label %}
+            <a class="mt-4 inline-flex text-xs font-semibold text-emerald-800 underline" href="https://www.post.gov.tw/post/internet/Postal/index.jsp?ID=2030205" target="_blank" rel="noopener noreferrer">查看中華郵政國際航空包裹資費 ↗</a>
+          {% else %}
+            <a class="mt-4 inline-flex text-xs font-semibold text-emerald-800 underline" href="https://www.post.gov.tw/post/internet/Postal/index.jsp?ID=2050106" target="_blank" rel="noopener noreferrer">查看中華郵政完整國內資費表 ↗</a>
+            <a class="button button-green mt-5 w-full" href="{% url 'core:compare' %}">比較寄件方案 <span>→</span></a>
+          {% endif %}
+        </div>
+      {% else %}
+        <div class="postage-tip">
+          <span class="eyebrow">HOW IT WORKS</span>
+          <h2 class="mt-2 text-lg font-bold">讓寄件費用一目了然</h2>
+          <ul class="mt-4 space-y-3 text-sm leading-6 text-slate-600">
+            <li><b>普通包裹</b><br>依重量、寄送區域與投遞方式計價。</li>
+            <li><b>便利箱／袋</b><br>依選用款式計價，重複使用可折抵郵資。</li>
+            <li><b>i 郵箱取件</b><br>輸入包裹尺寸，先檢查是否符合格口限制。</li>
+            <li><b>國際航空包裹</b><br>依目的地與材積重量計算，可估算常用寄達國家。</li>
+          </ul>
+        </div>
+      {% endif %}
+    </aside>
+  </div>
+
+  <div class="mt-6 flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 sm:flex-row sm:items-center sm:justify-between">
+    <div><b class="text-sm">需要其他國家或國際寄件方式？</b><p class="mt-1 text-xs text-slate-500">目前提供常用國家的航空包裹估算；其他目的地、陸空／水陸方式與特殊附加費請查官方資費。</p></div>
+    <a class="button button-light shrink-0" href="https://www.post.gov.tw/post/internet/Postal/index.jsp?ID=2030205" target="_blank" rel="noopener noreferrer">官方國際資費 <span>↗</span></a>
+  </div>
+</section>
+
+<script>
+  (() => {
+    const form = document.getElementById("postage-form");
+    const kind = form.querySelector("[data-kind-select]");
+    const delivery = form.querySelector("[data-delivery-select]");
+    const parcelFields = form.querySelector("[data-parcel-fields]");
+    const boxFields = form.querySelector("[data-box-fields]");
+    const internationalFields = form.querySelector("[data-international-fields]");
+    const dimensions = form.querySelector("[data-dimensions]");
+    const country = form.querySelector("[data-country-select]");
+    const weightInput = form.querySelector("[data-weight-input]");
+    const weightHelp = form.querySelector("[data-weight-help]");
+    const updateFields = () => {
+      const isBox = kind.value === "box";
+      const isInternational = kind.value === "international";
+      parcelFields.hidden = isBox || isInternational;
+      boxFields.hidden = !isBox;
+      internationalFields.hidden = !isInternational;
+      dimensions.hidden = isBox || isInternational || delivery.value !== "locker";
+      const countryLimit = country.selectedOptions[0].dataset.maxWeight;
+      weightInput.max = isInternational ? Number(countryLimit) * 1000 : 20000;
+      weightHelp.textContent = isInternational
+        ? `此目的地限重 ${countryLimit} 公斤以內。`
+        : "國內普通包裹限重 20 公斤。";
+    };
+    kind.addEventListener("change", updateFields);
+    delivery.addEventListener("change", updateFields);
+    country.addEventListener("change", updateFields);
+    updateFields();
+  })();
+</script>
+{% endblock %}
