@@ -36,9 +36,10 @@ copy .env.example .env
 
 | 網址 | 內容 |
 | --- | --- |
-| http://127.0.0.1:8000/ | 首頁 |
-| http://127.0.0.1:8000/accounts/register/ | 註冊 |
-| http://127.0.0.1:8000/accounts/login/ | 登入 |
+| <http://127.0.0.1:8000/> | 首頁 |
+| <http://127.0.0.1:8000/accounts/register/> | 註冊 |
+| <http://127.0.0.1:8000/accounts/login/> | 登入 |
+| <http://127.0.0.1:8000/health> | 健康檢查（回 200 JSON） |
 
 ---
 
@@ -79,21 +80,22 @@ Remove-Item Env:DATABASE_URL
 
 ## 專案結構
 
-```
-config/
-  settings/
-    base.py      # 共用設定、資料庫、認證
-    dev.py       # 本機開發（DEBUG=True）
-    prod.py      # 正式環境（安全設定、Whitenoise manifest）
-  urls.py
-apps/
-  accounts/      # 自訂 User、註冊 / 登入
-  core/          # 首頁；之後放最新消息、業務、據點
-templates/
-  base.html
-  home.html
-  accounts/
-static/css/style.css
+```text
+UI_Design/
+├── config/
+│   ├── settings/
+│   │   ├── base.py      # 共用設定、資料庫、認證
+│   │   ├── dev.py       # 本機開發（DEBUG=True）
+│   │   └── prod.py      # 正式環境（安全設定、Whitenoise manifest）
+│   └── urls.py
+├── apps/
+│   ├── accounts/      # 自訂 User、註冊 / 登入
+│   └── core/          # 首頁；之後放最新消息、業務、據點
+├── templates/
+│   ├── base.html
+│   ├── home.html
+│   └── accounts/
+└── static/css/style.css
 ```
 
 ---
