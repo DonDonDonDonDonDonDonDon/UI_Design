@@ -8,6 +8,7 @@ from django.views import View
 from django.views.decorators.http import require_POST
 from django.views.generic import ListView, UpdateView
 
+from .forms import validate_phone_number
 from .models import User
 
 
@@ -41,10 +42,23 @@ class ManagedUserForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ("account", "phone")
+        help_texts = {
+            "phone": "請輸入有效電話號碼（例如：0912345678 或 02-12345678），不可包含英文字母。",
+        }
         widgets = {
             "account": forms.TextInput(attrs={"autocomplete": "username"}),
-            "phone": forms.TelInput(attrs={"autocomplete": "tel"}),
+            "phone": forms.TelInput(
+                attrs={
+                    "autocomplete": "tel",
+                    "placeholder": "請輸入聯絡電話（例如：0912345678）",
+                    "pattern": r"(\+?886-?|0)(9[0-9]{2}-?[0-9]{3}-?[0-9]{3}|9[0-9]{8}|[2-8][0-9]{0,2}-?[0-9]{6,8})",
+                    "title": "請輸入有效的電話號碼（例如：0912345678 或 02-12345678），不可包含英文字母",
+                }
+            ),
         }
+
+    def clean_phone(self):
+        return validate_phone_number(self.cleaned_data.get("phone", ""))
 
     def save(self, commit=True):
         user = super().save(commit=False)
