@@ -12,6 +12,7 @@
       {% if user.is_authenticated %}
         {% if user.account == "Manager" %}<a href="{% url 'management:dashboard' %}" class="rounded-lg px-3 py-1.5 transition hover:bg-white/10">後台管理</a>{% endif %}
         <span class="hidden sm:inline">你好，{{ user.account }}</span>
+        {% if user.account != "Manager" %}<button type="button" id="feedback-open" class="rounded-lg bg-white/10 px-3 py-1.5 transition hover:bg-white/20" aria-haspopup="dialog" aria-controls="feedback-dialog">意見回饋</button>{% endif %}
         <form method="post" action="{% url 'accounts:logout' %}">
           {% csrf_token %}
           <button type="submit" class="rounded-lg bg-white/10 px-3 py-1.5 transition hover:bg-white/20">登出</button>
@@ -23,3 +24,82 @@
     </div>
   </div>
 </header>
+
+{% if user.is_authenticated and user.account != "Manager" %}
+<dialog id="feedback-dialog" class="m-auto w-[calc(100%-2rem)] max-w-lg rounded-2xl border-0 p-0 shadow-2xl backdrop:bg-slate-950/50" aria-labelledby="feedback-title">
+  <div class="flex items-start justify-between border-b border-slate-100 px-6 py-5">
+    <div>
+      <p class="eyebrow">WE VALUE YOUR FEEDBACK</p>
+      <h2 id="feedback-title" class="mt-1 text-xl font-bold text-slate-800">意見回饋</h2>
+    </div>
+    <button type="button" id="feedback-close" class="rounded-lg px-3 py-1 text-2xl leading-none text-slate-400 hover:bg-slate-100 hover:text-slate-700" aria-label="關閉">×</button>
+  </div>
+  <form id="feedback-form" method="post" action="{% url 'core:feedback_submit' %}" class="space-y-5 p-6">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+    <p class="-mt-2 text-sm text-slate-500">回饋會記錄在目前登入的 {{ user.account }} 帳號下。</p>
+    <p id="feedback-error" class="hidden rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">無法更新表單驗證，請重新整理頁面後再試一次。</p>
+    <label class="field-label">回饋類型
+      <select name="category" class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-800">
+        <option value="suggestion">功能建議</option>
+        <option value="issue">問題回報</option>
+        <option value="experience">使用體驗</option>
+        <option value="other">其他</option>
+      </select>
+    </label>
+    <label class="field-label">想告訴我們的內容
+      <textarea name="message" rows="5" required maxlength="1000" placeholder="請描述你的想法或遇到的問題…" class="mt-2 w-full resize-y rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-800 placeholder:text-slate-400 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-100"></textarea>
+    </label>
+    <label class="field-label">聯絡方式（選填）
+      <input name="contact" type="text" maxlength="120" placeholder="方便我們回覆你的方式" class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-800 placeholder:text-slate-400 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-100">
+    </label>
+    <div class="flex justify-end gap-3 pt-1">
+      <button type="button" id="feedback-cancel" class="rounded-xl border border-slate-200 px-4 py-2.5 font-semibold text-slate-600 hover:bg-slate-50">取消</button>
+      <button type="submit" class="rounded-xl bg-emerald-700 px-5 py-2.5 font-semibold text-white hover:bg-emerald-800">送出意見</button>
+    </div>
+  </form>
+</dialog>
+<script>
+  (() => {
+    const dialog = document.getElementById("feedback-dialog");
+    const form = document.getElementById("feedback-form");
+    const errorMessage = document.getElementById("feedback-error");
+    document.getElementById("feedback-open").addEventListener("click", () => dialog.showModal());
+    document.getElementById("feedback-close").addEventListener("click", () => dialog.close());
+    document.getElementById("feedback-cancel").addEventListener("click", () => dialog.close());
+    form.addEventListener("submit", async (event) => {
+      if (form.dataset.csrfRefreshed === "true") {
+        delete form.dataset.csrfRefreshed;
+        return;
+      }
+      event.preventDefault();
+      if (form.dataset.refreshing === "true") return;
+      form.dataset.refreshing = "true";
+      const submitButton = event.submitter;
+      if (submitButton) submitButton.disabled = true;
+      errorMessage.classList.add("hidden");
+      try {
+        const response = await fetch("{% url 'core:csrf_token' %}", {
+          credentials: "same-origin",
+          cache: "no-store",
+        });
+        if (!response.ok) throw new Error("CSRF refresh failed");
+        const data = await response.json();
+        form.querySelector("[name=csrfmiddlewaretoken]").value = data.csrfToken;
+        form.dataset.csrfRefreshed = "true";
+        if (submitButton) submitButton.disabled = false;
+        if (submitButton) form.requestSubmit(submitButton);
+        else form.requestSubmit();
+      } catch (_) {
+        errorMessage.classList.remove("hidden");
+        if (submitButton) submitButton.disabled = false;
+      } finally {
+        delete form.dataset.refreshing;
+      }
+    });
+    dialog.addEventListener("click", (event) => {
+      if (event.target === dialog) dialog.close();
+    });
+  })();
+</script>
+{% endif %}

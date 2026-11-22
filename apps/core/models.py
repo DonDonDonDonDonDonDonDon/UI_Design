@@ -146,3 +146,57 @@ class RemittanceTicket(models.Model):
 
     def __str__(self):
         return f"{self.office_name} {self.ticket_number}"
+
+
+class Feedback(models.Model):
+    class Category(models.TextChoices):
+        SUGGESTION = "suggestion", "功能建議"
+        ISSUE = "issue", "問題回報"
+        EXPERIENCE = "experience", "使用體驗"
+        OTHER = "other", "其他"
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="feedback_entries",
+        verbose_name="提交會員",
+    )
+    account_name = models.CharField("提交時帳號", max_length=150)
+    category = models.CharField("回饋類型", max_length=20, choices=Category.choices)
+    message = models.TextField("回饋內容", max_length=1000)
+    contact = models.CharField("聯絡方式", max_length=120, blank=True)
+    created_at = models.DateTimeField("提交時間", auto_now_add=True)
+
+    class Meta:
+        db_table = "feedback"
+        ordering = ("-created_at",)
+        verbose_name = "意見回饋"
+        verbose_name_plural = "意見回饋"
+
+    def __str__(self):
+        return f"{self.account_name} · {self.get_category_display()} · {self.created_at:%Y-%m-%d %H:%M}"
+
+
+class UserOperationLog(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="operation_logs",
+        verbose_name="操作會員",
+    )
+    account_name = models.CharField("操作時帳號", max_length=150)
+    operation = models.CharField("操作", max_length=120)
+    operated_at = models.DateTimeField("操作時間", auto_now_add=True)
+
+    class Meta:
+        db_table = "useroperationlog"
+        ordering = ("-operated_at",)
+        verbose_name = "使用者操作紀錄"
+        verbose_name_plural = "使用者操作紀錄"
+
+    def __str__(self):
+        return f"{self.account_name} · {self.operation} · {self.operated_at:%Y-%m-%d %H:%M}"

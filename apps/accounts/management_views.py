@@ -1,13 +1,15 @@
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Count
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.http import require_POST
-from django.views.generic import ListView, UpdateView
+from django.views.generic import TemplateView, UpdateView
 
+from apps.core.models import Feedback, UserOperationLog
 from .forms import validate_phone_number
 from .models import User
 
@@ -20,14 +22,21 @@ class ManagerRequiredMixin:
         return super().dispatch(request, *args, **kwargs)
 
 
-class ManagerDashboardView(LoginRequiredMixin, ManagerRequiredMixin, ListView):
-    model = User
+class ManagerDashboardView(LoginRequiredMixin, ManagerRequiredMixin, TemplateView):
     template_name = "management/dashboard.html"
-    context_object_name = "members"
-    ordering = ("account",)
 
-    def get_queryset(self):
-        return User.objects.exclude(account="Manager").order_by("account")
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["members"] = User.objects.exclude(account="Manager").order_by("account")
+        context["feedback_entries"] = Feedback.objects.select_related("user").all()
+        context["operation_logs"] = UserOperationLog.objects.select_related("user").all()[:200]
+        context["operation_log_count"] = UserOperationLog.objects.count()
+        context["operation_counts"] = (
+            UserOperationLog.objects.values("operation")
+            .annotate(use_count=Count("id"))
+            .order_by("-use_count", "operation")
+        )
+        return context
 
 
 class ManagedUserForm(forms.ModelForm):

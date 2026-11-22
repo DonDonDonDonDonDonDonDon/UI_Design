@@ -1,48 +1,151 @@
 {% extends "base.html" %}
 
-{% block title %}使用者管理 · 郵政生活網{% endblock %}
+{% block title %}管理後台 · 郵政生活網{% endblock %}
 
 {% block content %}
 <section class="page-wrap">
   <div class="page-heading">
     <span class="eyebrow">MANAGEMENT SYSTEM</span>
-    <h1>使用者管理</h1>
-    <p>檢視、更新或刪除一般使用者帳號。</p>
+    <h1>管理後台</h1>
+    <p>管理會員資料並查看使用者回饋。</p>
   </div>
 
-  <div class="panel overflow-x-auto">
-    <div class="mb-4 flex items-center justify-between">
-      <h2 class="text-lg font-bold">使用者列表</h2>
-      <span class="text-sm text-slate-500">共 {{ members|length }} 位</span>
-    </div>
-    <table class="w-full min-w-[620px] border-collapse text-left text-sm">
-      <thead>
-        <tr class="border-b border-slate-200 text-slate-500">
-          <th class="px-3 py-3 font-semibold">帳號</th>
-          <th class="px-3 py-3 font-semibold">電話</th>
-          <th class="px-3 py-3 text-right font-semibold">管理</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for member in members %}
-          <tr class="border-b border-slate-100 last:border-0">
-            <td class="px-3 py-4 font-medium text-slate-800">{{ member.account }}</td>
-            <td class="px-3 py-4 text-slate-600">{{ member.phone|default:"—" }}</td>
-            <td class="px-3 py-4">
-              <div class="flex justify-end gap-2">
-                <a class="button button-light" href="{% url 'management:user_edit' member.pk %}">編輯</a>
-                <form method="post" action="{% url 'management:user_delete' member.pk %}" onsubmit="return confirm('確定刪除帳號 {{ member.account|escapejs }}？此帳號的包裹資料也會一併刪除。')">
-                  {% csrf_token %}
-                  <button class="button border border-red-200 bg-red-50 text-red-700 hover:bg-red-100" type="submit">刪除</button>
-                </form>
-              </div>
-            </td>
+  <nav class="mb-6 flex flex-wrap gap-3" role="tablist" aria-label="管理資料切換">
+    <button type="button" id="users-tab" role="tab" aria-controls="users-panel" aria-selected="true" class="button button-green">使用者資料</button>
+    <button type="button" id="feedback-tab" role="tab" aria-controls="feedback-panel" aria-selected="false" class="button button-light">使用者回饋</button>
+    <button type="button" id="operations-tab" role="tab" aria-controls="operations-panel" aria-selected="false" class="button button-light">使用者操作</button>
+  </nav>
+
+    <div id="users-panel" role="tabpanel" aria-labelledby="users-tab" class="panel overflow-x-auto">
+      <div class="mb-4 flex items-center justify-between">
+        <h2 class="text-lg font-bold">使用者列表</h2>
+        <span class="text-sm text-slate-500">共 {{ members|length }} 位</span>
+      </div>
+      <table class="w-full min-w-[620px] border-collapse text-left text-sm">
+        <thead>
+          <tr class="border-b border-slate-200 text-slate-500">
+            <th class="px-3 py-3 font-semibold">帳號</th>
+            <th class="px-3 py-3 font-semibold">電話</th>
+            <th class="px-3 py-3 text-right font-semibold">管理</th>
           </tr>
-        {% empty %}
-          <tr><td class="px-3 py-10 text-center text-slate-500" colspan="3">目前沒有一般使用者。</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+        </thead>
+        <tbody>
+          {% for member in members %}
+            <tr class="border-b border-slate-100 last:border-0">
+              <td class="px-3 py-4 font-medium text-slate-800">{{ member.account }}</td>
+              <td class="px-3 py-4 text-slate-600">{{ member.phone|default:"—" }}</td>
+              <td class="px-3 py-4">
+                <div class="flex justify-end gap-2">
+                  <a class="button button-light" href="{% url 'management:user_edit' member.pk %}">編輯</a>
+                  <form method="post" action="{% url 'management:user_delete' member.pk %}" onsubmit="return confirm('確定刪除帳號 {{ member.account|escapejs }}？此帳號的包裹資料也會一併刪除。')">
+                    {% csrf_token %}
+                    <button class="button border border-red-200 bg-red-50 text-red-700 hover:bg-red-100" type="submit">刪除</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td class="px-3 py-10 text-center text-slate-500" colspan="3">目前沒有一般使用者。</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div id="feedback-panel" role="tabpanel" aria-labelledby="feedback-tab" class="panel overflow-x-auto" hidden>
+      <div class="mb-4 flex items-center justify-between">
+        <h2 class="text-lg font-bold">使用者回饋</h2>
+        <span class="text-sm text-slate-500">共 {{ feedback_entries|length }} 則</span>
+      </div>
+      <table class="w-full min-w-[760px] border-collapse text-left text-sm">
+        <thead>
+          <tr class="border-b border-slate-200 text-slate-500">
+            <th class="px-3 py-3 font-semibold">帳號</th>
+            <th class="px-3 py-3 font-semibold">類型</th>
+            <th class="px-3 py-3 font-semibold">回饋內容</th>
+            <th class="px-3 py-3 font-semibold">聯絡方式</th>
+            <th class="px-3 py-3 font-semibold">提交時間</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entry in feedback_entries %}
+            <tr class="border-b border-slate-100 last:border-0 align-top">
+              <td class="px-3 py-4 font-medium text-slate-800">{{ entry.user.account|default:entry.account_name }}</td>
+              <td class="whitespace-nowrap px-3 py-4 text-slate-600">{{ entry.get_category_display }}</td>
+              <td class="max-w-md whitespace-pre-wrap px-3 py-4 text-slate-700">{{ entry.message }}</td>
+              <td class="px-3 py-4 text-slate-600">{{ entry.contact|default:"—" }}</td>
+              <td class="whitespace-nowrap px-3 py-4 text-slate-500">{{ entry.created_at|date:"Y-m-d H:i" }}</td>
+            </tr>
+          {% empty %}
+            <tr><td class="px-3 py-10 text-center text-slate-500" colspan="5">目前沒有使用者回饋。</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div id="operations-panel" role="tabpanel" aria-labelledby="operations-tab" class="panel overflow-x-auto" hidden>
+      <div class="mb-4 flex items-center justify-between">
+        <h2 class="text-lg font-bold">使用者操作紀錄</h2>
+        <span class="text-sm text-slate-500">共 {{ operation_log_count }} 筆，顯示最新 {{ operation_logs|length }} 筆</span>
+      </div>
+      <div class="mb-8 rounded-xl border border-slate-100 bg-slate-50 p-4">
+        <h3 class="mb-3 font-semibold text-slate-800">各項操作使用次數</h3>
+        <table class="w-full max-w-xl border-collapse text-left text-sm">
+          <thead>
+            <tr class="border-b border-slate-200 text-slate-500">
+              <th class="px-3 py-2 font-semibold">操作</th>
+              <th class="px-3 py-2 text-right font-semibold">使用次數</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in operation_counts %}
+              <tr class="border-b border-slate-100 last:border-0">
+                <td class="px-3 py-3 text-slate-700">{{ item.operation }}</td>
+                <td class="px-3 py-3 text-right font-semibold text-slate-800">{{ item.use_count }}</td>
+              </tr>
+            {% empty %}
+              <tr><td class="px-3 py-4 text-center text-slate-500" colspan="2">目前沒有操作統計資料。</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <table class="w-full min-w-[620px] border-collapse text-left text-sm">
+        <thead>
+          <tr class="border-b border-slate-200 text-slate-500">
+            <th class="px-3 py-3 font-semibold">帳號</th>
+            <th class="px-3 py-3 font-semibold">操作</th>
+            <th class="px-3 py-3 font-semibold">時間</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in operation_logs %}
+            <tr class="border-b border-slate-100 last:border-0">
+              <td class="px-3 py-4 font-medium text-slate-800">{{ log.user.account|default:log.account_name }}</td>
+              <td class="px-3 py-4 text-slate-700">{{ log.operation }}</td>
+              <td class="whitespace-nowrap px-3 py-4 text-slate-500">{{ log.operated_at|date:"Y-m-d H:i:s" }}</td>
+            </tr>
+          {% empty %}
+            <tr><td class="px-3 py-10 text-center text-slate-500" colspan="3">目前沒有使用者操作紀錄。</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
 </section>
+<script>
+  (() => {
+    const tabs = [
+      { button: document.getElementById("users-tab"), panel: document.getElementById("users-panel") },
+      { button: document.getElementById("feedback-tab"), panel: document.getElementById("feedback-panel") },
+      { button: document.getElementById("operations-tab"), panel: document.getElementById("operations-panel") },
+    ];
+    tabs.forEach(({ button }, selectedIndex) => {
+      button.addEventListener("click", () => {
+        tabs.forEach(({ button: tabButton, panel }, index) => {
+          const selected = index === selectedIndex;
+          tabButton.setAttribute("aria-selected", String(selected));
+          tabButton.classList.toggle("button-green", selected);
+          tabButton.classList.toggle("button-light", !selected);
+          panel.hidden = !selected;
+        });
+      });
+    });
+  })();
+</script>
 {% endblock %}

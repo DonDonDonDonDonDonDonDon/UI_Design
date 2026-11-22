@@ -1,13 +1,19 @@
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect
-from django.http import Http404
-from django.db import transaction
 from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.http import Http404, JsonResponse
+from django.db import transaction
+from django.middleware.csrf import get_token
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views import View
 from django.views.generic import TemplateView
 
-from .models import Parcel, RemittanceQueue, RemittanceTicket
+from .forms import FeedbackForm
+from .models import Feedback, Parcel, RemittanceQueue, RemittanceTicket
 
 
 PLACES = [
@@ -421,3 +427,34 @@ class TrackingView(LoginRequiredMixin, TemplateView):
 
 class HomeView(TemplateView):
     template_name = "home.html"
+
+
+class FeedbackSubmitView(LoginRequiredMixin, View):
+    login_url = "accounts:login"
+
+    def post(self, request, *args, **kwargs):
+        form = FeedbackForm(request.POST)
+        next_url = request.POST.get("next", "")
+        if not url_has_allowed_host_and_scheme(
+            next_url,
+            allowed_hosts={request.get_host()},
+            require_https=request.is_secure(),
+        ):
+            next_url = reverse("core:home")
+
+        if form.is_valid():
+            Feedback.objects.create(
+                user=request.user,
+                account_name=request.user.account,
+                **form.cleaned_data,
+            )
+            messages.success(request, "意見回饋已記錄，謝謝你的建議。")
+        else:
+            messages.error(request, "請確認回饋內容並重新送出。")
+        return redirect(next_url)
+
+
+@ensure_csrf_cookie
+@never_cache
+def refresh_csrf_token(request):
+    return JsonResponse({"csrfToken": get_token(request)})
