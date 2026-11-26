@@ -4,6 +4,15 @@ from .models import Feedback
 
 
 class FeedbackForm(forms.ModelForm):
+    feedback_type = forms.ChoiceField(
+        choices=(
+            ("", "請選擇評價"),
+            (Feedback.FeedbackType.LIKE, "按讚"),
+            (Feedback.FeedbackType.DISLIKE, "倒讚"),
+        ),
+        widget=forms.HiddenInput,
+    )
+
     class Meta:
         model = Feedback
         fields = ("feedback_type", "category", "message", "contact")
