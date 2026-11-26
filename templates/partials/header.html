@@ -37,8 +37,17 @@
   <form id="feedback-form" method="post" action="{% url 'core:feedback_submit' %}" class="space-y-5 p-6">
     {% csrf_token %}
     <input type="hidden" name="next" value="{{ request.get_full_path }}">
+    <input type="hidden" name="feedback_type" value="form">
     <p class="-mt-2 text-sm text-slate-500">回饋會記錄在目前登入的 {{ user.account }} 帳號下。</p>
     <p id="feedback-error" class="hidden rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">無法更新表單驗證，請重新整理頁面後再試一次。</p>
+    <fieldset>
+      <legend class="field-label mb-3">你覺得這個網站如何？</legend>
+      <div class="grid grid-cols-2 gap-3">
+        <button type="button" data-feedback-choice="like" aria-pressed="false" class="rounded-xl border border-slate-200 px-4 py-3 font-semibold text-slate-700 transition hover:border-emerald-600 hover:bg-emerald-50">👍 按讚</button>
+        <button type="button" data-feedback-choice="dislike" aria-pressed="false" class="rounded-xl border border-slate-200 px-4 py-3 font-semibold text-slate-700 transition hover:border-rose-500 hover:bg-rose-50">👎 倒讚</button>
+      </div>
+      <p class="mt-2 text-xs text-slate-500">選擇按讚或倒讚後送出；也可以改填意見表單。</p>
+    </fieldset>
     <label class="field-label">回饋類型
       <select name="category" class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-800">
         <option value="suggestion">功能建議</option>
@@ -48,7 +57,7 @@
       </select>
     </label>
     <label class="field-label">想告訴我們的內容
-      <textarea name="message" rows="5" required maxlength="1000" placeholder="請描述你的想法或遇到的問題…" class="mt-2 w-full resize-y rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-800 placeholder:text-slate-400 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-100"></textarea>
+      <textarea name="message" rows="5" maxlength="1000" placeholder="請描述你的想法或遇到的問題…" class="mt-2 w-full resize-y rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-800 placeholder:text-slate-400 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-100"></textarea>
     </label>
     <label class="field-label">聯絡方式（選填）
       <input name="contact" type="text" maxlength="120" placeholder="方便我們回覆你的方式" class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-800 placeholder:text-slate-400 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-100">
@@ -64,9 +73,38 @@
     const dialog = document.getElementById("feedback-dialog");
     const form = document.getElementById("feedback-form");
     const errorMessage = document.getElementById("feedback-error");
+    const feedbackType = form.querySelector('[name="feedback_type"]');
+    const message = form.querySelector('[name="message"]');
+    const submitButton = form.querySelector('[type="submit"]');
+    message.required = true;
     document.getElementById("feedback-open").addEventListener("click", () => dialog.showModal());
     document.getElementById("feedback-close").addEventListener("click", () => dialog.close());
     document.getElementById("feedback-cancel").addEventListener("click", () => dialog.close());
+    form.querySelectorAll("[data-feedback-choice]").forEach((button) => {
+      button.addEventListener("click", () => {
+        feedbackType.value = button.dataset.feedbackChoice;
+        message.required = false;
+        form.querySelectorAll("[data-feedback-choice]").forEach((choice) => {
+          const selected = choice === button;
+          choice.setAttribute("aria-pressed", String(selected));
+          choice.classList.toggle("ring-2", selected);
+          choice.classList.toggle("ring-emerald-600", selected && button.dataset.feedbackChoice === "like");
+          choice.classList.toggle("ring-rose-500", selected && button.dataset.feedbackChoice === "dislike");
+        });
+        submitButton.textContent = button.dataset.feedbackChoice === "like" ? "送出按讚" : "送出倒讚";
+      });
+    });
+    message.addEventListener("input", () => {
+      if (message.value.trim()) {
+        feedbackType.value = "form";
+        message.required = true;
+        form.querySelectorAll("[data-feedback-choice]").forEach((choice) => {
+          choice.setAttribute("aria-pressed", "false");
+          choice.classList.remove("ring-2", "ring-emerald-600", "ring-rose-500");
+        });
+        submitButton.textContent = "送出意見表單";
+      }
+    });
     form.addEventListener("submit", async (event) => {
       if (form.dataset.csrfRefreshed === "true") {
         delete form.dataset.csrfRefreshed;

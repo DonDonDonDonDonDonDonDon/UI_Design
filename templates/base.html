@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="{% static 'css/style.css' %}?v=7">
   {% block extra_head %}{% endblock %}
 </head>
-<body class="flex min-h-full flex-col bg-slate-50 text-slate-800 antialiased">
+<body class="flex min-h-full flex-col bg-slate-50 text-slate-800 antialiased" data-user-operation="{{ request.user_operation_name|default:'' }}">
   {% include "partials/header.html" %}
 
   {% if messages %}
@@ -30,6 +30,87 @@
   <main class="flex-1">
     {% block content %}{% endblock %}
   </main>
+
+  {% if user.is_authenticated and user.account != "Manager" and request.user_operation_name %}
+    <form id="foreground-csrf-form" class="hidden">{% csrf_token %}</form>
+    <script>
+      (() => {
+        const operation = document.body.dataset.userOperation;
+        const csrfToken = document.querySelector("#foreground-csrf-form [name=csrfmiddlewaretoken]")?.value;
+        if (!operation || !csrfToken) return;
+        let visibleSince = document.visibilityState === "visible" ? performance.now() : null;
+        const flushForegroundTime = () => {
+          if (visibleSince === null) return;
+          const seconds = Math.floor((performance.now() - visibleSince) / 1000);
+          visibleSince = null;
+          if (seconds < 1) return;
+          const body = new URLSearchParams({
+            csrfmiddlewaretoken: csrfToken,
+            operation,
+            seconds: String(seconds),
+          });
+          const url = "{% url 'core:operation_duration' %}";
+          const sent = navigator.sendBeacon(
+            url,
+            new Blob([body.toString()], { type: "application/x-www-form-urlencoded" })
+          );
+          if (!sent) {
+            fetch(url, {
+              method: "POST",
+              credentials: "same-origin",
+              keepalive: true,
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body,
+            });
+          }
+        };
+        document.addEventListener("visibilitychange", () => {
+          if (document.visibilityState === "hidden") flushForegroundTime();
+          else if (visibleSince === null) visibleSince = performance.now();
+        });
+        window.addEventListener("pagehide", flushForegroundTime);
+      })();
+    </script>
+  {% endif %}
+
+  <script>
+    (() => {
+      const csrfRefreshUrl = "{% url 'core:csrf_token' %}";
+      document.addEventListener("submit", async (event) => {
+        const form = event.target;
+        if (!(form instanceof HTMLFormElement) || form.method.toLowerCase() !== "post" || form.id === "feedback-form") return;
+        if (form.dataset.csrfRefreshed === "true") {
+          delete form.dataset.csrfRefreshed;
+          return;
+        }
+        const tokenInput = form.querySelector('[name="csrfmiddlewaretoken"]');
+        if (!tokenInput || form.dataset.csrfRefreshing === "true") return;
+
+        event.preventDefault();
+        form.dataset.csrfRefreshing = "true";
+        const submitter = event.submitter;
+        if (submitter) submitter.disabled = true;
+        try {
+          const response = await fetch(csrfRefreshUrl, {
+            credentials: "same-origin",
+            cache: "no-store",
+          });
+          if (!response.ok) throw new Error("CSRF token refresh failed");
+          const data = await response.json();
+          tokenInput.value = data.csrfToken;
+          form.dataset.csrfRefreshed = "true";
+          if (submitter) submitter.disabled = false;
+          if (submitter) form.requestSubmit(submitter);
+          else form.requestSubmit();
+        } catch (_) {
+          if (submitter) submitter.disabled = false;
+          window.alert("表單驗證更新失敗，請重新整理頁面後再試一次。");
+        } finally {
+          delete form.dataset.csrfRefreshing;
+        }
+      }, true);
+    })();
+  </script>
 
   {% include "partials/footer.html" %}
 </body>

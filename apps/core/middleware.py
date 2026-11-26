@@ -27,9 +27,20 @@ class UserOperationLogMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
+        match = getattr(request, "resolver_match", None)
+        operation = (
+            OPERATION_LABELS.get(match.url_name)
+            if match is not None and match.namespace == "core"
+            else None
+        )
+        if request.method == "POST" and match is not None:
+            if match.url_name == "ticket":
+                operation = "申請數位號碼牌"
+            elif match.url_name == "remittance_form":
+                operation = "申請取號"
+        request.user_operation_name = operation or ""
         response = self.get_response(request)
         user = getattr(request, "user", None)
-        match = getattr(request, "resolver_match", None)
         if (
             response.status_code < 400
             and user is not None
@@ -39,15 +50,13 @@ class UserOperationLogMiddleware:
             and match.namespace == "core"
             and request.method in {"GET", "POST"}
         ):
-            operation = OPERATION_LABELS.get(match.url_name)
             if operation:
-                if match.url_name == "ticket" and request.method == "POST":
-                    operation = "申請數位號碼牌"
                 try:
                     UserOperationLog.objects.create(
                         user=user,
                         account_name=user.account,
                         operation=operation,
+                        foreground_seconds=0,
                     )
                 except Exception:
                     logger.exception("Could not save user operation log.")

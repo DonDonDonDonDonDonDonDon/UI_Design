@@ -14,6 +14,8 @@ class Migration(migrations.Migration):
                 ("password", models.CharField(max_length=128, verbose_name="password")),
                 ("account", models.CharField(max_length=150, unique=True, verbose_name="帳號")),
                 ("phone", models.CharField(max_length=20, verbose_name="電話")),
+                ("name", models.CharField(blank=True, default="", max_length=80, verbose_name="名字")),
+                ("group_name", models.CharField(blank=True, db_column="group", default="", max_length=80, verbose_name="組別")),
             ],
             options={"db_table": "user", "verbose_name": "會員", "verbose_name_plural": "會員"},
             managers=[("objects", apps.accounts.models.UserManager())],

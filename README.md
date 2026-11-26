@@ -4,7 +4,7 @@ Django 6.1 + Neon PostgreSQL 的全端網站骨架。目前包含：
 
 - 自訂會員模型（`apps.accounts.User`）
 - 註冊 / 登入 / 登出
-- 登入會員資料表（`user`: id、帳號、密碼、電話）與包裹追蹤資料表（`parcel`）
+- 登入會員資料表（`user`: id、帳號、密碼、電話、名字、組別）與包裹追蹤資料表（`parcel`）
 - Tailwind CSS（CDN，免建置）
 - Neon 連線設定（未設定時自動退回 SQLite）
 
@@ -64,7 +64,7 @@ $env:DATABASE_URL = $line.Substring('DATABASE_URL_UNPOOLED='.Length).Trim('"')
 Remove-Item Env:DATABASE_URL
 ```
 
-此專案刻意不建立 `django_migrations`、`django_session`、權限或管理後台資料表。登入 session 使用簽章 Cookie。不要執行 `manage.py migrate` 或 `createsuperuser`，以免 Django 建立其他資料表；目前由專用的 `setup_*_table` 指令初始化資料表。意見回饋存於 `feedback`，會關聯會員並保存提交時帳號名稱、回饋類型、內容、選填聯絡方式與時間；執行 `setup_feedback_table` 建立該表。登入會員使用網站功能時，操作名稱、帳號與時間會記錄於 `useroperationlog`；執行 `setup_user_operation_log_table` 建立該表，管理後台可查看最近 200 筆。儲匯等候人數存於 `remittancequeue`，取號紀錄存於 `remittanceticket`。執行 `setup_remittance_queue_table` 會建立或補齊這兩張資料表及業務類別欄位，並補上初始示範資料，不會覆寫既有等候人數。一般業務取號分為匯款、存提、開戶、換印鑑，另有郵務業務取號；同一帳號在同一郵局可依不同業務各取一張號碼牌。新取號會讓該郵局等候人數加一，同業務重複取號會顯示原號碼，不會重複加人。頁面預估時間依每位等候者 2 分鐘計算。查詢頁預放 `DEMO-` 示範包裹，狀態與位置尚未串接中華郵政即時物流資料。
+此專案刻意不建立 `django_migrations`、`django_session`、權限或管理後台資料表。登入 session 使用簽章 Cookie。不要執行 `manage.py migrate` 或 `createsuperuser`，以免 Django 建立其他資料表；目前由專用的 `setup_*_table` 指令初始化資料表。新版意見回饋存於 `userfeedback`，會關聯會員並保存提交時帳號名稱、按讚／倒讚／意見表單類型、內容、選填聯絡方式與時間；執行 `setup_feedback_table` 建立新版資料表。舊版 `feedback` 表不會由此指令刪除。登入會員使用網站功能時，操作名稱、帳號、時間與頁面前景停留秒數會記錄於 `useroperationlog`；執行 `setup_user_operation_log_table` 建立或補齊該表，管理後台可查看使用次數、停留時間與最近 200 筆紀錄。儲匯等候人數存於 `remittancequeue`，取號紀錄存於 `remittanceticket`。執行 `setup_remittance_queue_table` 會建立或補齊這兩張資料表及業務類別欄位，並補上初始示範資料，不會覆寫既有等候人數。一般業務取號分為匯款、存提、開戶、換印鑑，另有郵務業務取號；同一帳號在同一郵局可依不同業務各取一張號碼牌。新取號會讓該郵局等候人數加一，同業務重複取號會顯示原號碼，不會重複加人。頁面預估時間依每位等候者 2 分鐘計算。查詢頁預放 `DEMO-` 示範包裹，狀態與位置尚未串接中華郵政即時物流資料。
 
 更新郵局等候人數時可執行：
 

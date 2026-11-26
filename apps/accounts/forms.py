@@ -38,7 +38,7 @@ class RegisterForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ("account", "phone")
+        fields = ("account", "name", "group_name", "phone")
         help_texts = {
             "phone": "請輸入有效電話號碼（例如：0912345678 或 02-12345678），不可包含英文字母。",
         }
@@ -73,6 +73,8 @@ class RegisterForm(forms.ModelForm):
                 candidate = User(
                     account=cleaned_data.get("account", ""),
                     phone=cleaned_data.get("phone", ""),
+                    name=cleaned_data.get("name", ""),
+                    group_name=cleaned_data.get("group_name", ""),
                 )
                 validate_password(password1, candidate)
         return cleaned_data

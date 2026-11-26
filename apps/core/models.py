@@ -149,6 +149,11 @@ class RemittanceTicket(models.Model):
 
 
 class Feedback(models.Model):
+    class FeedbackType(models.TextChoices):
+        LIKE = "like", "按讚"
+        DISLIKE = "dislike", "倒讚"
+        FORM = "form", "意見表單"
+
     class Category(models.TextChoices):
         SUGGESTION = "suggestion", "功能建議"
         ISSUE = "issue", "問題回報"
@@ -164,19 +169,24 @@ class Feedback(models.Model):
         verbose_name="提交會員",
     )
     account_name = models.CharField("提交時帳號", max_length=150)
-    category = models.CharField("回饋類型", max_length=20, choices=Category.choices)
-    message = models.TextField("回饋內容", max_length=1000)
+    feedback_type = models.CharField(
+        "回饋方式", max_length=12, choices=FeedbackType.choices
+    )
+    category = models.CharField(
+        "回饋類型", max_length=20, choices=Category.choices, blank=True
+    )
+    message = models.TextField("回饋內容", max_length=1000, blank=True)
     contact = models.CharField("聯絡方式", max_length=120, blank=True)
     created_at = models.DateTimeField("提交時間", auto_now_add=True)
 
     class Meta:
-        db_table = "feedback"
+        db_table = "userfeedback"
         ordering = ("-created_at",)
         verbose_name = "意見回饋"
         verbose_name_plural = "意見回饋"
 
     def __str__(self):
-        return f"{self.account_name} · {self.get_category_display()} · {self.created_at:%Y-%m-%d %H:%M}"
+        return f"{self.account_name} · {self.get_feedback_type_display()} · {self.created_at:%Y-%m-%d %H:%M}"
 
 
 class UserOperationLog(models.Model):
@@ -190,6 +200,7 @@ class UserOperationLog(models.Model):
     )
     account_name = models.CharField("操作時帳號", max_length=150)
     operation = models.CharField("操作", max_length=120)
+    foreground_seconds = models.PositiveIntegerField("頁面前景停留秒數", default=0)
     operated_at = models.DateTimeField("操作時間", auto_now_add=True)
 
     class Meta:

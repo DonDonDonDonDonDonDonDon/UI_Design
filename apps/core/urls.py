@@ -2,7 +2,8 @@ from django.urls import path
 
 from .views import (CompareView, FeedbackSubmitView, HomeView, LocationDetailView, LocationMapView,
                     LocationsView, PostageView, RemittanceFormView,
-                    RemittanceView, TicketView, TrackingView, refresh_csrf_token)
+                    RemittanceView, TicketView, TrackingView,
+                    record_foreground_time, refresh_csrf_token)
 
 app_name = "core"
 
@@ -19,4 +20,5 @@ urlpatterns = [
     path("remittance/ticket/", TicketView.as_view(), name="ticket"),
     path("feedback/", FeedbackSubmitView.as_view(), name="feedback_submit"),
     path("csrf-token/", refresh_csrf_token, name="csrf_token"),
+    path("user-operation-duration/", record_foreground_time, name="operation_duration"),
 ]

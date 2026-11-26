@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Count
+from django.db.models import Count, Q, Sum
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
@@ -33,7 +33,10 @@ class ManagerDashboardView(LoginRequiredMixin, ManagerRequiredMixin, TemplateVie
         context["operation_log_count"] = UserOperationLog.objects.count()
         context["operation_counts"] = (
             UserOperationLog.objects.values("operation")
-            .annotate(use_count=Count("id"))
+            .annotate(
+                use_count=Count("id", filter=Q(foreground_seconds=0)),
+                foreground_seconds=Sum("foreground_seconds"),
+            )
             .order_by("-use_count", "operation")
         )
         return context
@@ -50,7 +53,7 @@ class ManagedUserForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ("account", "phone")
+        fields = ("account", "name", "group_name", "phone")
         help_texts = {
             "phone": "請輸入有效電話號碼（例如：0912345678 或 02-12345678），不可包含英文字母。",
         }

@@ -1,19 +1,22 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
-from django.http import Http404, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.db import transaction
 from django.middleware.csrf import get_token
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.http import require_POST
 from django.views import View
 from django.views.generic import TemplateView
 
 from .forms import FeedbackForm
-from .models import Feedback, Parcel, RemittanceQueue, RemittanceTicket
+from .middleware import OPERATION_LABELS
+from .models import Feedback, Parcel, RemittanceQueue, RemittanceTicket, UserOperationLog
 
 
 PLACES = [
@@ -448,7 +451,7 @@ class FeedbackSubmitView(LoginRequiredMixin, View):
                 account_name=request.user.account,
                 **form.cleaned_data,
             )
-            messages.success(request, "意見回饋已記錄，謝謝你的建議。")
+            messages.success(request, "回饋已記錄，謝謝你的參與。")
         else:
             messages.error(request, "請確認回饋內容並重新送出。")
         return redirect(next_url)
@@ -458,3 +461,26 @@ class FeedbackSubmitView(LoginRequiredMixin, View):
 @never_cache
 def refresh_csrf_token(request):
     return JsonResponse({"csrfToken": get_token(request)})
+
+
+@login_required(login_url="accounts:login")
+@require_POST
+def record_foreground_time(request):
+    if request.user.account == "Manager":
+        return HttpResponse(status=204)
+    operation = request.POST.get("operation", "")
+    try:
+        seconds = int(request.POST.get("seconds", "0"))
+    except (TypeError, ValueError):
+        return HttpResponse(status=400)
+    if operation not in set(OPERATION_LABELS.values()):
+        return HttpResponse(status=400)
+    if seconds < 1 or seconds > 86_400:
+        return HttpResponse(status=400)
+    UserOperationLog.objects.create(
+        user=request.user,
+        account_name=request.user.account,
+        operation=operation,
+        foreground_seconds=seconds,
+    )
+    return HttpResponse(status=204)
